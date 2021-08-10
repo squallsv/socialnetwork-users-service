@@ -4,11 +4,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.neo4j.ogm.annotation.GeneratedValue;
-import org.neo4j.ogm.annotation.Id;
-import org.neo4j.ogm.annotation.NodeEntity;
-import org.neo4j.ogm.annotation.Relationship;
-import org.neo4j.ogm.id.UuidStrategy;
+import org.springframework.data.neo4j.core.schema.GeneratedValue;
+import org.springframework.data.neo4j.core.schema.Id;
+import org.springframework.data.neo4j.core.schema.Node;
+import org.springframework.data.neo4j.core.schema.Relationship;
+import org.springframework.data.neo4j.core.support.UUIDStringGenerator;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -18,11 +18,11 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @ToString
-@NodeEntity
+@Node
 public class User {
 
     @Id
-    @GeneratedValue(strategy = UuidStrategy.class)
+    @GeneratedValue(value = UUIDStringGenerator.class)
     private String id;
 
     private String name;
@@ -32,7 +32,7 @@ public class User {
     @ToString.Exclude
     private Set<User> following;
 
-    @Relationship(type = "FOLLOWS", direction = Relationship.INCOMING)
+    @Relationship(type = "FOLLOWS", direction = Relationship.Direction.INCOMING)
     @ToString.Exclude
     private Set<User> followers;
 

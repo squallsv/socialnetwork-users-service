@@ -4,9 +4,7 @@ package com.socialnetwork.users.acceptance;
 import com.socialnetwork.users.domain.User;
 import com.socialnetwork.users.repository.UserRepository;
 import com.socialnetwork.users.utils.UserBuilder;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -51,20 +49,57 @@ public class UserAcceptanceTests {
     private URL usersURL;
     private List<User> users;
     private String usersUrlString;
+    private User ben;
+    private User rick;
+    private User leslie;
 
-    @BeforeAll
+    @BeforeEach
     @Transactional
     public void setUp() throws Exception {
+        ben = new UserBuilder().name(BEN).email("ben@test.com").build();
+        rick = new UserBuilder().name(RICK).email("rick_knope@test.com").build();
+        leslie = new UserBuilder().name(LESLIE).email("leslie_knope@test.com").build();
+
         usersUrlString = format("http://localhost:%s/%s", port, USERS);
         usersURL = new URL(usersUrlString);
 
-        users = new ArrayList<>();
-
-        users.add(new UserBuilder().name(BEN).email("ben@test.com").build());
-        users.add(new UserBuilder().name(RICK).email("rick_knope@test.com").build());
-        users.add(new UserBuilder().name(LESLIE).email("leslie_knope@test.com").build());
+        users = Arrays.asList(ben, rick, leslie);
 
         userRepository.saveAll(users);
+    }
+
+    class BranchByAbstraction implements Abstraction{
+        private Abstraction oldCode;
+        private Abstraction newCode;
+
+        @Override
+        public void execute(Object object) {
+            if(featureFlagIsEnabled()){
+                try{
+                    newCode.execute(object);
+                    //log success
+                }catch(Exception ex){
+                    oldCode.execute(object);
+                    //log error and that old code had to be run
+                }
+            } else{
+                oldCode.execute(object);
+            }
+        }
+
+        private boolean featureFlagIsEnabled() {
+            return true;
+        }
+    }
+
+    interface Abstraction{
+        void execute(Object object);
+    }
+
+    @AfterEach
+    @Transactional
+    public void tearUp(){
+        userRepository.deleteAll(users);
     }
 
     @Test
@@ -79,6 +114,13 @@ public class UserAcceptanceTests {
 
         assertThat(findByIdResponse.getStatusCodeValue(), is(200));
         assertThat(findByIdResponse.getBody(), is(user));
+
+        cleanup(user);
+    }
+
+    @Transactional
+    private void cleanup(User user) {
+        userRepository.delete(user);
     }
 
     @Test
