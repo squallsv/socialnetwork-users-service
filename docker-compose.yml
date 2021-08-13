@@ -1,0 +1,26 @@
+version: '2'
+services:
+  users-service:
+    container_name: users-service
+    image: users-service:latest
+    ports:
+      - 8080:8080
+    depends_on:
+      - users-neo4j
+#    networks:
+#      - spring-cloud-network
+  users-neo4j:
+    container_name: users-neo4j
+    image: neo4j:latest
+    ports:
+      - 7687:7687
+      - 7474:7474
+#    networks:
+#      - spring-cloud-network
+    volumes:
+      - neo4j_data:/data/
+volumes:
+  neo4j_data:
+#networks:
+#  spring-cloud-network:
+#    driver: bridge
