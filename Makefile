@@ -3,4 +3,4 @@ SHELL := /usr/bin/env bash
 
 .PHONY: create
 create:
-    @source scripts/create.sh
+	@source scripts/create.sh

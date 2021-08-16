@@ -68,38 +68,11 @@ public class UserAcceptanceTests {
         userRepository.saveAll(users);
     }
 
-    class BranchByAbstraction implements Abstraction{
-        private Abstraction oldCode;
-        private Abstraction newCode;
-
-        @Override
-        public void execute(Object object) {
-            if(featureFlagIsEnabled()){
-                try{
-                    newCode.execute(object);
-                    //log success
-                }catch(Exception ex){
-                    oldCode.execute(object);
-                    //log error and that old code had to be run
-                }
-            } else{
-                oldCode.execute(object);
-            }
-        }
-
-        private boolean featureFlagIsEnabled() {
-            return true;
-        }
-    }
-
-    interface Abstraction{
-        void execute(Object object);
-    }
-
     @AfterEach
     @Transactional
     public void tearUp(){
-        userRepository.deleteAll(users);
+        var allUsers = userRepository.findAll();
+        userRepository.deleteAll(allUsers);
     }
 
     @Test
@@ -113,14 +86,8 @@ public class UserAcceptanceTests {
         var findByIdResponse = template.getForEntity(link.get().getHref(), User.class);
 
         assertThat(findByIdResponse.getStatusCodeValue(), is(200));
-        assertThat(findByIdResponse.getBody(), is(user));
-
-        cleanup(user);
-    }
-
-    @Transactional
-    private void cleanup(User user) {
-        userRepository.delete(user);
+        assertThat(findByIdResponse.getBody().getName(), is(user.getName()));
+        assertThat(findByIdResponse.getBody().getEmail(), is(user.getEmail()));
     }
 
     @Test
