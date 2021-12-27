@@ -17,4 +17,4 @@ fi
 
 docker build -t users-service:latest .
 
-docker-compose up --build
+docker-compose up --build --detach
